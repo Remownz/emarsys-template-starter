@@ -1,11 +1,16 @@
-{% extends "imports/layout.twig" %}
-
-{% block content %}
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+<ul>
     Hello {{ name }}!
 
     {% for i in collection %}
-        {{ i }}
+        <li>{{ i }}</li>
     {% endfor %}
-
-{% endblock %}
+</ul>
+</body>
+</html>
