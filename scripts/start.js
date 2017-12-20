@@ -11,7 +11,7 @@ generate.init(() => {
             {
                 match: ["templates/*.twig", "templates/*.json"],
                 fn: function (event, file) {
-                    generate(path.basename(file))
+                    generate.recompile(path.basename(file))
                 }
             }
         ]

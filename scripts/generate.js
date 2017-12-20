@@ -22,7 +22,7 @@ function init(serverCallback) {
     return f.match(/\.twig/) && !f.match(/index\.twig/);
   });
 
-  Promise.all(generateTemplates(templates)).then(values => {
+  Promise.all(compileTemplates(templates)).then(values => {
     if(values.length){
       Promise.resolve(generateIndex((values.map(t => path.basename(t, '.html'))))).then(() => {
           console.log(chalk.green('All files created, starting development server...'));
@@ -36,9 +36,19 @@ function init(serverCallback) {
   })
 }
 
-function generateTemplates(templates) {
+function recompile(src){
+
+}
+
+function compileTemplates(templates) {
   return templates.map(t => {
     return new Promise((resolve, reject) => {
+      const dataFile = path.resolve(paths.appTemplates, name + '.json');
+
+      if (fs.existsSync(dataFile)) {
+
+      }
+
       twig.renderFile(path.resolve(paths.appTemplates, t), {}, (err, html) => {
         if (!err) {
           resolve(writeTemplate(path.resolve(paths.appPublic, path.basename(t, '.twig')) + '.html', html));
