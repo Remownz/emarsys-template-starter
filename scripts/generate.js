@@ -6,7 +6,6 @@ const path = require('path');
 const read = require('read-file');
 const chalk = require('chalk');
 
-const templatesBasePath = 'src/templates';
 const appDirectory = fs.realpathSync(process.cwd());
 const resolveApp = relativePath => path.resolve(appDirectory, relativePath);
 
@@ -18,61 +17,99 @@ const paths = {
 };
 
 function init(serverCallback) {
-  const templates = filter(fs.readdirSync(templatesBasePath), function (f) {
+  const templates = filter(fs.readdirSync(paths.appTemplates), function(f) {
     return f.match(/\.twig/) && !f.match(/index\.twig/);
   });
 
-  Promise.all(compileTemplates(templates)).then(values => {
-    if(values.length){
-      Promise.resolve(generateIndex((values.map(t => path.basename(t, '.html'))))).then(() => {
-          console.log(chalk.green('All files created, starting development server...'));
+  Promise.all(compileTemplates(templates, 'create')).then(
+    values => {
+      if (values.length) {
+        Promise.resolve(
+          generateIndex(
+            values.map(t => {
+              return {
+                src: getTemplateBasename(t) + '.html',
+                name: getTemplateBasename(t)
+              };
+            })
+          )
+        ).then(() => {
+          console.log(
+            chalk.green('All files created, starting development server...')
+          );
           serverCallback();
-      });
-    } else {
-      throw new Error('No Templates compiled!');
+        });
+      } else {
+        throw new Error('No Templates compiled!');
+      }
+    },
+    error => {
+      console.log(error);
     }
-  }, error => {
-    console.log(error);
-  })
+  );
 }
 
-function recompile(src){
-
+function recompile(event, src) {
+  compileTemplates([getTemplateBasename(src) + '.twig'], event);
 }
 
-function compileTemplates(templates) {
+function getTemplateBasename(t) {
+  return path.basename(t, path.extname(t));
+}
+
+function compileTemplates(templates, event) {
   return templates.map(t => {
     return new Promise((resolve, reject) => {
-      const dataFile = path.resolve(paths.appTemplates, name + '.json');
+      read(
+        path.resolve(paths.appTemplates, getTemplateBasename(t) + '.twig'),
+        'utf8',
+        (error, buffer) => {
+          if (!error) {
+            const dataFile = path.resolve(
+              paths.appTemplates,
+              getTemplateBasename(t) + '.json'
+            );
+            let data = {};
 
-      if (fs.existsSync(dataFile)) {
+            if (fs.existsSync(dataFile)) {
+              data = fs.readFileSync(dataFile, 'utf8');
+            }
 
-      }
+            const twigTemplate = twig.twig({
+              data: buffer
+            });
 
-      twig.renderFile(path.resolve(paths.appTemplates, t), {}, (err, html) => {
-        if (!err) {
-          resolve(writeTemplate(path.resolve(paths.appPublic, path.basename(t, '.twig')) + '.html', html));
-        } else {
-          reject(err);
+            const output = twigTemplate.render(JSON.parse(data));
+
+            resolve(
+              writeTemplate(
+                path.resolve(paths.appPublic, getTemplateBasename(t)) + '.html',
+                output,
+                event
+              )
+            );
+          } else {
+            console.log(error);
+            reject(error);
+          }
         }
-      })
-    })
+      );
+    });
   });
 }
 
-function writeTemplate(dest, content){
+function writeTemplate(dest, content, event) {
   return new Promise((resolve, reject) => {
     fs.writeFile(dest, content, fileError => {
       if (fileError) {
         console.log(chalk.red(fileError));
         reject(fileError);
       } else {
-        console.log(chalk.cyan(dest + ' created'));
+        console.log(chalk.cyan(event + ' ' + dest));
         resolve(dest);
       }
     });
-  })
-
+  });
 }
 
 function generateIndex(indexFiles) {
@@ -82,7 +119,7 @@ function generateIndex(indexFiles) {
       { indexFiles: indexFiles },
       (err, html) => {
         if (!err) {
-          resolve(writeTemplate(paths.appIndex, html));
+          resolve(writeTemplate(paths.appIndex, html, 'create'));
         } else {
           reject(err);
         }
@@ -92,5 +129,6 @@ function generateIndex(indexFiles) {
 }
 
 module.exports = {
-  init: init
+  init: init,
+  recompile: recompile
 };

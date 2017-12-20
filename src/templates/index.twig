@@ -7,7 +7,7 @@
 <body>
 <ul>
     {% for index in indexFiles %}
-        <li>{{ index }}</li>
+        <li><a href="{{ index.src }}">{{ index.name }}</a></li>
     {% endfor %}
 </ul>
 </body>

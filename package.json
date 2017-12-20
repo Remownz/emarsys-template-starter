@@ -1,6 +1,6 @@
 {
   "name": "emarsys-templates-starter",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A boilerplate for emarsys template development",
   "main": "index.js",
   "scripts": {
@@ -10,7 +10,7 @@
   "keywords": [
     "emarsys"
   ],
-  "author": "Christian Hoffart <hoffart@thesisdigital.de>",
+  "author": "Christian Hoffart <christian@easyflair.de>",
   "license": "MIT",
   "dependencies": {
     "browser-sync": "^2.18.13",
