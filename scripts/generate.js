@@ -5,16 +5,8 @@ const twig = require('twig');
 const path = require('path');
 const read = require('read-file');
 const chalk = require('chalk');
+const paths = require('./paths');
 
-const appDirectory = fs.realpathSync(process.cwd());
-const resolveApp = relativePath => path.resolve(appDirectory, relativePath);
-
-const paths = {
-  appPublic: resolveApp('public'),
-  appTemplates: resolveApp('src/templates'),
-  appIndexTemplate: resolveApp('src/templates/index.twig'),
-  appIndex: resolveApp('public/index.html')
-};
 
 function init(serverCallback) {
   const templates = filter(fs.readdirSync(paths.appTemplates), function(f) {

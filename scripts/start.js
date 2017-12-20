@@ -1,5 +1,4 @@
 const bs = require("browser-sync").create();
-const path = require('path');
 const generate = require("./generate");
 
 generate.init(() => {
